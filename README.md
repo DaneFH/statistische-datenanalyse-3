@@ -8,3 +8,5 @@ Analysen und Übungsaufgaben aus dem Kurs "Statistische Datenanalyse 3" im 4. Se
 - Aufgabe 3 – Zwei metrische Variablen: Korrelation
 - Aufgabe 4 – zwei metrische Variablen: Regression
 - Aufgabe 5 – Zeitreihenanalyse
+
+Alle Analysen, Auswertungen und Interpretationen wurden **eigenständig von mir erstellt**. 
