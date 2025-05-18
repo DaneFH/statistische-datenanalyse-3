@@ -10,3 +10,7 @@ Analysen und Übungsaufgaben aus dem Kurs "Statistische Datenanalyse 3" im 4. Se
 - Aufgabe 5 – Zeitreihenanalyse
 
 Alle Analysen, Auswertungen und Interpretationen wurden **eigenständig von mir erstellt**. 
+
+---
+
+> Erstellt im Rahmen des 4. Semesters BSc Wirtschaftsinformatik – Daniel Stepanovic
