@@ -1,0 +1,127 @@
+---
+title: "Zeitreihenanalyse"
+author: "Daniel Stepanovic"
+format: pdf
+editor: visual
+---
+
+### Benötigte Libraries
+
+```{r}
+library(tseries) #Zugriff auf Börsendaten
+library(forecast) #Holt-Winters-Glättung (Trend + Saison)
+library(ggplot2) 
+```
+
+## Ausgangssituation
+
+Im Rahmen dieser Analyse sollen die täglichen Schlusskurse des Unternehmens YPF Sociedad Anonima im Zeitraum vom  **18. Februar 2025 bis 07. April 2025** untersucht werden.
+
+Die Ziele sind eine Zerlegung der Zeitreihe in ihre Komponenten sowie eine Kurzfristprognose für die folgenden 10 Handelstage mittels Holt-Winters-Verfahren.
+
+## Datenmanagement
+
+Die Kursdaten werden mit **get.hist.quote()** geladen:
+
+```{r}
+daten = get.hist.quote(instrument = "YPF", start = "2025-02-18", end = "2025-04-07",
+quote = "Close", compression = "d")
+```
+
+Die Daten werden anschließend in ein ts-Objekt mit wöchentlicher Saisonalität (5 Handelstage) transformiert:
+
+```{r}
+daten_ts = ts(daten, start = c(8, 2), frequency = 5)
+```
+
+### Stichprobengröße und fehlende Werte
+
+```{r}
+length(daten_ts)        # Anzahl Beobachtungen
+sum(is.na(daten_ts))    # Fehlende Werte
+```
+### Datensteckbrief
+
+Es liegt ein metrisches Merkmal mit 34 Beobachtungen (keine fehlenden Werte) als Zeitreihe vor.
+Die Messungen erfolgten im Zeitraum vom 18. Februar 2025 bis 07. April 2025 an Börsentagen (werktags), mit einer Tagesauflösung von 5 Beobachtungen pro Woche.
+Die Zeitreihe wurde mit einer Frequenz von 5 (Handelstage/Woche) und dem Startzeitpunkt Kalenderwoche 8, Dienstag erstellt.
+
+## Numerische Beschreibung
+
+```{r}
+summary(daten_ts)
+```
+
+Der durchschnittliche Schlusskurs im Beobachtungszeitraum beträgt rund 35,11 USD. Die Kurse bewegen sich im Bereich zwischen 30,00 USD (Minimum) und 38,39 USD (Maximum).
+
+## Grafische Darstellung der Ist-Werte
+
+Das Zeitreihendiagramm sieht wie folgt aus:
+
+```{r}
+plot(daten_ts, main = "Schlusskurse YPF (Feb-Apr 2025)", ylab = "Kurs in USD", xlab = "Kalenderwoche")
+```
+Das Zeitreihendiagramm zeigt eine hohe Kursschwankung im Analysezeitraum.
+Nach einem anfänglichen Hoch in Woche 9 fällt der Kurs bis Woche 11 deutlich ab, ehe eine Erholung eintritt.
+Gegen Ende (Woche 14–15) ist ein erneuter Kursrückgang zu beobachten.
+
+## Trend und Saison
+
+Die Zeitreihe wird mit der Funktion **decompose()** in Trend-, saisonale und Zufallskomponente zerlegt.
+
+```{r}
+dec = decompose(daten_ts)
+plot(dec)
+```
+
+Der **Trendverlauf** zeigt einen Rückgang bis zur 11. Kalenderwoche, gefolgt von einer deutlichen Aufwärtsbewegung.
+
+Die **saisonale** Komponente weist ein regelmäßiges Wochenmuster auf, was typisch für Börsenverläufe mit Handelstagen ist.
+
+Die **Restkomponente (Random)** enthält kurzfristige Schwankungen, die nicht durch Trend oder Saison erklärt werden können.
+
+Optional: Saisonfigur anzeigen:
+
+```{r}
+monthplot(dec$seasonal, main = "Saisonfigur: Wochentageffekt")
+```
+Die Saisonfigur zeigt den typischen Wochenverlauf der Schlusskurse.
+Während an Montagen und Dienstagen tendenziell niedrigere Kurse beobachtet werden, steigen die Werte zur Wochenmitte und erreichen am Mittwoch ihr saisonales Hoch.
+Dieses Muster könnte auf marktpsychologische Effekte oder typische Handelsrhythmen zurückzuführen sein.
+
+## Modellschätzung mit Holt-Winters
+
+Wir schätzen ein Holt-Winters-Modell zur Vorhersage der nächsten 10 Handelstage:
+
+```{r}
+hw_modell = HoltWinters(daten_ts)
+hw_modell
+```
+Das Modell liefert folgende Glättungsparameter:
+
+- **α (Alpha) = 0.894**: Neue Werte gehen stark in die Berechnung ein.  
+- **β (Beta) = 0.289**: Der Trend wird leicht angepasst.  
+- **γ (Gamma) = 0**: Die saisonale Komponente wird als konstant betrachtet.
+
+### Prognoseergebnisse
+
+Für die nächsten 10 Handelstage wurde mithilfe des geschätzten Holt-Winters-Modells eine Kurzfristprognose erstellt:
+
+```{r}
+forecast_10 = forecast(hw_modell, h = 10)
+forecast_10
+```
+> Die Prognose zeigt einen **deutlichen Abwärtstrend**: Der erwartete Kurs fällt von ca. **28,5 USD auf 15,9 USD**.  
+> Die Konfidenzintervalle werden breiter, was auf zunehmende Unsicherheit mit steigendem Prognosehorizont hinweist.
+
+## Prognosediagramm
+
+```{r}
+plot(forecast_10, main = "Holt-Winters-Prognose für YPF")
+lines(fitted(hw_modell)[,1], col = "blue")
+```
+> Die Grafik zeigt sowohl die **beobachteten Werte**, als auch die **Prognosewerte** mit 80% und 95%-Konfidenzbändern. Die grafische Darstellung macht den sinkenden Trend und die zunehmende Unsicherheit deutlich sichtbar.
+
+## Bewertung des Modells
+
+Das Modell bildet sowohl Trend als auch saisonale Schwankungen ab. Die Prognosebandbreite zeigt die Unsicherheit zukünftiger Kurse. Einfache Struktur, aber nützlich für kurzfristige Schätzungen ohne externe Marktinformationen.
