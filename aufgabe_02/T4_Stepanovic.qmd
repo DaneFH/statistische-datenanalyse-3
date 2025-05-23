@@ -1,0 +1,160 @@
+---
+title: "Zusammenhang zwischen Wohnform und Kontaktgrad"
+subtitle: "Zwei kategoriale Variablen"
+author: "Daniel Stepanovic"
+format: pdf
+editor: visual
+---
+
+# Ausgangssituation
+
+Im Rahmen einer Umfrage zur Wohnsituation in Wien wurden Daten von **107 Personen** erhoben. Dabei standen **zwei kategoriale Merkmale** im Fokus:
+
+- **Wohnform** (nominalskaliert)
+- **Kontaktgrad** (nominalskaliert)
+
+| Nummer | Wohnform          |
+|--------|-------------------|
+| 1      | Wohnturm          |
+| 2      | Apartment         |
+| 3      | Haus mit Innenhof |
+| 4      | Reihenhaus        |
+
+: Art des Wohngebäudes
+
+| Nummer | Kontakt |
+|--------|---------|
+| 1      | niedrig |
+| 2      | hoch    |
+
+: Grad des sozialen Kontakts
+
+Ziel der Untersuchung ist es herauszufinden, ob es einen **statistisch signifikanten Zusammenhang zwischen Wohnform und Kontaktgrad** gibt. 
+\newpage
+Die zentrale Forschungsfrage lautet:
+
+**Beeinflusst die Wohnform den sozialen Kontaktgrad der Bewohner?**
+
+**Hinweis**: Wohnform ist dabei die **unabhängige Variable**, der Kontaktgrad ist die **abhängige Variable**. (**Homogenitätsproblem**)
+
+# Datenmanagement
+
+Die Daten wurden mit `read.table()` eingelesen.
+
+```{r}
+rohdaten = read.table("wi23b095.txt", sep = "|", header = TRUE)
+```
+
+Prüfung auf fehlende Werte (NA's) mit **is.na()**.
+
+```{r}
+colSums(is.na(rohdaten))
+```
+
+Entfernung der fünf fehlenden Werte
+
+```{r}
+rohdaten_clean = na.omit(rohdaten)
+```
+
+Von den ursprünglich 107 im Zuge der Umfrage erhobenen Fällen konnten nach Bereinigung aufgrund fehlender Angaben 102 vollständige Fälle für die Analyse berücksichtigt werden.
+
+Variablen **wohnform** und **kontakt** in einen Faktor umwandeln
+
+```{r}
+rohdaten_clean$wohnform = factor(rohdaten_clean$wohnform, 
+                                 labels = c("Wohnturm", "Apartment", 
+                                            "Haus mit Innenhof", 
+                                            "Reihenhaus"))
+rohdaten_clean$kontakt = factor(rohdaten_clean$kontakt, 
+                                labels = c("niedrig", "hoch"))
+```
+\newpage
+# Übersicht über die Einzelmerkmale
+
+Häufigkeitstabelle Wohnform
+
+```{r}
+table(rohdaten_clean$wohnform)
+```
+
+Balkendiagramm Wohnform
+
+```{r, fig.height=6, fig.width=8}
+barplot(table(rohdaten_clean$wohnform), main = "Wohnform", col = "lightblue")
+```
+\newpage
+Häufigkeitstabelle Kontakt
+
+```{r}
+table(rohdaten_clean$kontakt)
+```
+Balkendiagramm Kontakt
+
+```{r}
+barplot(table(rohdaten_clean$kontakt), main = "Kontaktgrad", col = "lightgreen")
+```
+
+Die Mehrheit der Befragten lebt in Apartments, während Häuser mit Innenhof vergleichsweise selten vertreten sind. Insgesamt zeigt sich ein überwiegend hoher Kontaktgrad zur Nachbarschaft. Ob dieser Kontaktgrad mit der Wohnform zusammenhängt, wird im weiteren Verlauf der Analyse untersucht.
+\newpage
+
+#### Kontingenztabelle
+
+```{r}
+library(pander)
+kontingenz = table(rohdaten_clean$wohnform, rohdaten_clean$kontakt)
+pander(kontingenz, justify = "right", emphasize.rownames = FALSE, caption = 
+         "Kontingenztabelle: Wohnform × Kontaktgrad")
+```
+
+\newpage
+
+#### Zusammenhang zwischen Wohnform & Kontaktgrad
+
+```{r}
+mosaicplot(kontingenz, main = "Zusammenhang zwischen Wohnform & Kontaktgrad", 
+           color = TRUE, xlab = "Wohnform",
+           ylab = "Kontaktgrad")
+```
+
+Diese grafische Verteilung deutet auf einen möglichen Zusammenhang zwischen Wohnform und Kontaktgrad hin.
+
+**Apartments** stellen den größten Anteil an der Stichprobe dar. Innerhalb dieser Wohnform ist der Anteil von Personen mit **hohem Kontakt** zur Nachbarschaft deutlich höher als jener mit niedrigem Kontakt.
+
+In **Wohnturm** ist die Verteilung zwischen niedrigem und hohem Kontakt relativ ausgeglichen, mit leichtem Überhang bei niedrigem Kontakt.
+
+Bei **Häusern mit Innenhof** sowie **Reihenhäusern** zeigt sich ein vergleichbarer Trend: In beiden Wohnformen überwiegt ebenfalls der hohe Kontaktgrad, wenn auch auf kleinerer Gesamtfläche (geringerer Anteil an Befragten).
+
+Insgesamt scheint der **hohe Kontaktgrad in allen Wohnformen häufiger** vorzukommen, besonders ausgeprägt bei Bewohner\*innen von Apartments.
+
+## Statistische Analyse
+
+#### Hypothesen
+
+-   Die **Nullhypothese**: Wohnform und Kontaktgrad sind unabhängig voneinander.
+
+-   Die **Alternativhypothese**: Es besteht ein Zusammenhang zwischen Wohnform und Kontaktgrad.
+
+    Wir überprüfen, ob der p-Wert kleiner als das festgelegte Signifikanzniveau von 10% (0,10) ist. Ist dies der Fall, so wird die Nullhypothese verworfen.
+
+#### Chi-Quadrat
+
+```{r}
+chisq.test(kontingenz)
+```
+
+Da der p-Wert über 0,05 liegt, wird die Nullhypothese beibehalten. Es kann kein statistisch signifikanter Zusammenhang zwischen Wohnform und Kontaktgrad nachgewiesen werden.
+
+##### Simulierter p-Wert bei kleinen erwarteten Werten
+
+```{r}
+chisq.test(kontingenz, simulate.p.value = TRUE, B = 10000)
+```
+
+Auch der simulierte p-Wert bestätigt, dass kein signifikanter Zusammenhang zwischen den beiden Variablen besteht.
+
+## Fazit
+
+Die Analyse hat gezeigt, dass sich das Kontaktverhalten je nach Wohnform zwar sichtbar unterscheidet, dieser Unterschied jedoch **nicht statistisch signifikant** ist. Sowohl der klassische Chi-Quadrat-Test als auch der Test mit simuliertem p-Wert ergeben einen p-Wert deutlich über dem Signifikanzniveau von 0,05.
+
+**Ein Zusammenhang zwischen Wohnform und Kontaktgrad konnte auf Basis der vorliegenden Daten nicht statistisch nachgewiesen werden. Das bedeutet jedoch nicht, dass kein Zusammenhang existiert – lediglich, dass kein signifikanter Nachweis mit den gegebenen Daten möglich war.**
