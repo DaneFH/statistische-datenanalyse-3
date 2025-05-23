@@ -1,0 +1,138 @@
+---
+title: "Analyse der Diätstudie"
+subtitle: "Eine metrische Variable – Paarvergleich"
+author: "Daniel Stepanovic"
+format: pdf
+editor: visual
+---
+
+# Ausgangssituation
+
+Für eine Studie wurden 54 Sportler:innen rekrutiert, um den Effekt unterschiedlicher Ernährungspläne auf die Gewichtsabnahme zu untersuchen. Die Teilnehmer:innen wurden zu Beginn und nach sechs Wochen Diät gewogen (in kg). Ziel ist es, die Verteilung der Gewichtsveränderungen zu analysieren und festzustellen, ob die Diät einen signifikanten Effekt auf das Gewicht hatte.
+
+### Skalenniveau der Variablen
+
+-   **anfang**: metrisch (Verhältnisniveau) – Körpergewicht in kg zu Beginn der Diät.
+-   **ende**: metrisch (Verhältnisniveau) – Körpergewicht in kg nach sechs Wochen.
+-   **veränderung**: metrisch (Verhältnisniveau) – Differenz zwischen Anfangs- und Endgewicht.
+
+Alle Variablen sind **quantitativ** und auf **Verhältnisniveau** skaliert, da ein absoluter Nullpunkt existiert und sinnvolle Verhältnisse gebildet werden können. Das erlaubt die Anwendung parametrischer Verfahren (z.B. t-Test).
+
+# Datenmanagement
+
+Die Daten werden mittels **read.table()** eingelesen.
+
+```{r}
+rohdaten = read.table("wi23b095.txt", header = TRUE, sep = ",")
+```
+
+### Prüfung auf fehlende Werte (NA's) mit summary().
+
+```{r}
+summary(rohdaten)
+```
+
+In den Daten liegen **54 Beobachtungen** vor, wobei **drei Werte** in der Variable anfang und **ein Wert** in der Variable ende **fehlen**.
+
+### Entfernung fehlender Werte
+
+```{r}
+rohdaten_clean = subset(rohdaten, complete.cases(rohdaten))
+```
+
+### Stichprobengröße
+
+Vor der Bereinigung: 54 Beobachtungen
+
+Nach der Bereinigung: 50 Beobachtungen
+
+# Deskriptive Auswertung
+
+Die Verteilungen von "anfang" (Anfangsgewicht) und "ende" (Endgewicht) wurden numerisch beschrieben:
+
+```{r}
+summary(rohdaten_clean$anfang)
+summary(rohdaten_clean$ende)
+```
+
+Standardabweichung:
+
+```{r}
+sd(rohdaten_clean$anfang)
+sd(rohdaten_clean$ende)
+```
+
+Die Daten zeigen eine durchschnittliche Gewichtsabnahme von **72,6 kg auf 68,7 kg**. Die fast identischen Werte von **Mittelwert** und **Median** sowohl zu Beginn **(72,45 kg vs. 72,63 kg)** als auch am Ende **(69,05 kg vs. 68,73 kg)** lassen auf eine **symmetrische Verteilung** der Daten schließen. Die **Standardabweichung** verringerte sich leicht von **6,25 kg auf 6,06 kg**, was für eine etwas gleichmäßigere Gewichtsverteilung nach der Maßnahme spricht. Insgesamt hat sich die Streubreite aber kaum verändert.
+
+### Visualisierung der Verteilungen
+
+```{r}
+par(mfrow = c(1,2))
+hist(rohdaten_clean$anfang, main = "Anfangsgewicht",
+xlab = "Gewicht (kg)", ylab = "Anzahl der Teilnehmer")
+hist(rohdaten_clean$ende, main = "Endgewicht",
+xlab = "Gewicht (kg)", ylab = "Anzahl der Teilnehmer",  ylim = c(0, 20))
+```
+
+```{r}
+boxplot(rohdaten_clean$anfang, rohdaten_clean$ende,
+names = c("Anfangsg.", "Endg."),
+main = "Vergleich der Gewichte", horizontal = TRUE)
+```
+
+Die grafischen Darstellungen zeigen eine erfolgreiche Gewichtsreduktion in der Studienpopulation.
+
+### Numerische Zusammenfassung der Gewichtsveränderung
+
+```{r}
+rohdaten_clean$veränderung = rohdaten_clean$anfang - rohdaten_clean$ende
+summary(rohdaten_clean$veränderung)
+```
+
+-   Das Minimum der Gewichtsveränderung beträgt -5,8 kg.
+-   25 % der Teilnehmer:innen haben eine Gewichtsveränderung von 1,025 kg oder weniger erfahren. Das bedeutet, dass ein Viertel der Gruppe nur eine geringe Gewichtsabnahme oder sogar eine leichte Zunahme hatte.
+-   Der Median der Gewichtsveränderung beträgt 3,45 kg. Dies bedeutet, dass die Hälfte der Teilnehmer:innen 3,45 kg oder mehr abgenommen hat, während die andere Hälfte 3.45 kg oder weniger abgenommen hat.
+-   Der Durchschnitt der Gewichtsveränderung beträgt 3,896 kg.
+-   75 % der Teilnehmer:innen haben eine Gewichtsveränderung von 7,175 kg oder weniger erfahren. Das bedeutet, dass ein Viertel der Gruppe eine Gewichtsabnahme von mehr als 7,175 kg erreicht hat.
+-   Das Maximum der Gewichtsveränderung beträgt 12,2 kg.
+
+```{r}
+sd(rohdaten_clean$veränderung)
+```
+
+### Visualisierung der Gewichtsdifferenz
+
+```{r}
+hist(rohdaten_clean$veränderung, 
+     main = "Verteilung der Gewichtsveränderungen", 
+     xlab = "Gewichtsveränderung (kg)",
+     ylab = "Anzahl der Teilnehmer",
+     breaks = seq(-6, 13, by = 1),
+     xlim = c(-10, 15)
+     )
+```
+
+```{r}
+boxplot(rohdaten_clean$veränderung, names = c("Gewichtsdifferenz"),
+main = "Vergleich der Gewichte", horizontal = TRUE)
+```
+
+# Hypothesentest
+
+### Normalverteilung der Differenzen
+
+```{r}
+shapiro.test(rohdaten_clean$anfang - rohdaten_clean$ende)
+```
+
+Der Shapiro-Wilk-Test zeigt keine signifikante Abweichung von der Normalverteilung (p \> 0.05), sodass die Voraussetzung für den gepaarten t-Test als erfüllt betrachtet werden kann.
+
+```{r}
+t.test(rohdaten_clean$anfang, rohdaten_clean$ende, paired = TRUE)
+```
+
+Der gepaarte t-Test zeigt eine signifikaten Gewichtsabnahme nach der Diät (p \< 0,05) sodass die Nullhypothese (keine Gewichtsveränderung) verworfen werden kann. Die Diät war wirksam!
+
+# Fazit
+
+Die Analyse zeigt eine signifikante Gewichtsabnahme nach der sechswöchigen Diät, die sowohl durch die deskriptiven Statistiken als auch den gepaarten t-Test belegt wird. Nach Bestätigung der Normalverteilung konnte die Wirksamkeit der Diät statistisch nachgewiesen werden. Die Ergebnisse verdeutlichen einen klaren Effekt, dessen Aussagekraft durch eine größere Stichprobe noch weiter gesteigert werden könnte.
