@@ -1,0 +1,13 @@
+"tiefe"|"hoehe"|"volumen"
+"Ultimaker-3"|215|197|8.5
+"Prusa-MINI"|180|180|5.8
+"Formlabs-Form-3"|145|145|3.9
+"Ultimaker-S3"|230|190|8.7
+"Prusa-SL1S-SPEED"|80|120|1.4
+"BCN3D-Sigmax-R19"|297|420|26.2
+"Anycubic-Vyper"|245|245|15.6
+"Sindoh-3DWOX-1"|200|210|8.2
+"Dagoma-Disco-Ultimate"|200|200|8
+"Dremel-DigiLab-3D45"|170|255|6.7
+"Prusa-i3-MK3S"|210|210|11
+"Ultimaker-S5"|300|330|23.8
