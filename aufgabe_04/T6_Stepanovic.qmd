@@ -1,0 +1,177 @@
+---
+title: "Regression zweier metrischer Variablen – Bierdaten"
+author: "Daniel Stepanovic"
+format: pdf
+editor: visual
+---
+
+## Ausgangssituation
+
+Der vorliegende Datensatz enthält Informationen zu 34 verschiedenen Biersorten, die in Österreich im Jahr 2016 über die Brau Union vertrieben wurden (Quelle: Open Data Portal Österreich).
+
+Für jede Biersorte wurden die folgenden Merkmale erhoben:
+
+| Variablen | Beschreibung |
+|------------------------------------|------------------------------------|
+| **Bier_name** | Bezeichnung der Biersorte (nur zur Identifikation, nicht Bestandteil der Analyse) |
+| **Stammwuerze** | Gehalt an Extraktstoffen vor der Gärung, gemessen in Grad Plato (°P) |
+| **Vol_alkohol** | Alkoholgehalt in Volumenprozent (%) |
+| **Kalorien_je_100ml** | Kaloriengehalt des Bieres je 100 ml in Kilokalorien (kcal) |
+
+Ziel der Analyse ist es, den Kaloriengehalt eines Bieres mithilfe der Prädiktoren **Stammwürze** und **Alkoholgehalt** zu modellieren. Es soll überprüft werden, wie stark diese beiden Merkmale den Energiegehalt beeinflussen. Zusätzlich wird für eine bestimmte Biersorte ("Gösser Märzen") eine Vorhersage getroffen und im Kontext der übrigen Daten interpretiert.
+
+Die Daten stammen aus dem Datensatz `wi21b043.txt` und wurden zur Bearbeitung dieser Übung von `wi23b095` verwendet.
+
+## Datenmanagement
+
+Die Daten wurden mit **read.table()** eingelesen:
+
+```{r}
+options(scipen = 9999)
+bierdaten = read.table("wi21b043.txt", sep = ";", header = TRUE)
+head(bierdaten)
+```
+
+Wir überprüfen die Stichprobe auf fehlende Werte:
+
+```{r}
+nrow(bierdaten)
+```
+
+```{r}
+summary(bierdaten)
+```
+
+```{r}
+bierdaten_clean <- subset(bierdaten, complete.cases(bierdaten))
+```
+
+```{r}
+nrow(bierdaten)          # Ursprüngliche Stichprobe
+nrow(bierdaten_clean)    # Bereinigte Stichprobe
+nrow(bierdaten) - nrow(bierdaten_clean)  # Anzahl der ausgeschlossenen Beobachtungen
+```
+
+Die ursprüngliche Stichprobe umfasst 34 Biersorten. Es liegen jedoch fehlende Werte in den Variablen Stammwuerze (2 Fälle), Vol_alkohol (3 Fälle) und Kalorien_je_100ml (1 Fall) vor. Für die weitere Analyse wurden nur vollständige Beobachtungen verwendet, sodass 28 Biersorten in die Auswertung eingehen.
+
+## Übersicht
+
+```{r}
+summary(bierdaten_clean)
+```
+
+Die Stammwürze reicht von etwa 6,5 bis 16,2°P. Der Alkoholgehalt schwankt zwischen 0,4% bis 7,1%. Der Kaloriengehalt liegt zwischen 16 und 60 kcal je 100ml.
+
+## Visualisierung
+
+### Boxplots der Variablen
+
+```{r}
+boxplot(bierdaten_clean$Stammwuerze, horizontal = TRUE, main ="Stammwürze")
+```
+
+Die Verteilung der **Stammwürze** ist annähernd symmetrisch mit mehreren Ausreißern an beiden Enden. Der Mittelwert liegt bei 12,07 Grad Plato, der Median bei 11,85.
+
+```{r}
+boxplot(bierdaten_clean$Vol_alkohol, horizontal = TRUE, main ="Alkoholgehalt")
+```
+
+Der **Alkoholgehalt** zeigt eine leicht linksschiefe Verteilung mit mehreren Ausreißern im Bereich unter 2%. Der Mittelwert liegt bei rund 4,69 Vol. %, der Median bei 5,1 Vol. %.
+
+```{r}
+boxplot(bierdaten_clean$Kalorien_je_100ml, horizontal = TRUE, main ="Kalorien")
+```
+
+Die **Kalorienverteilung** ist leicht linksschief. Einige Biere weisen einen besonders hohen Kaloriengehalt (über 50 kcal) auf. Der Mittelwert liegt bei 42,54 kcal, der Median bei 43 kcal je 100 ml.
+
+### Pairs-Plot mit Regressionsgeraden
+
+```{r}
+pairs(bierdaten_clean[, c("Stammwuerze", "Vol_alkohol", "Kalorien_je_100ml")],
+        panel = function(x, y) {
+        points(x, y)
+        abline(lm(y ~ x), col = "red")
+      })
+```
+
+Die Grafiken deuten auf lineare Zusammenhänge zwischen allen drei Variablen hin:
+
+-   Zwischen **Stammwürze** und **Kaloriengehalt** zeigt sich ein klar positiver Zusammenhang – höhere Stammwürze führt tendenziell zu mehr Kalorien.
+
+-   Auch der **Alkoholgehalt** hängt positiv mit dem **Kaloriengehalt** zusammen, wenn auch etwas schwächer.
+
+-   Zwischen **Stammwürze** und **Alkoholgehalt** besteht eine sehr starke lineare Korrelation, was auf Multikollinearität hinweisen könnte – das wird bei der Modellwahl berücksichtigt.
+
+```{r}
+cor(bierdaten_clean$Stammwuerze, bierdaten_clean$Vol_alkohol)
+```
+
+Ein Korrelationskoeffizient von r ≈ 0,81 bestätigt eine starke Multikollinearität zwischen Stammwürze und Alkoholgehalt.
+
+## Modellschätzung
+
+```{r}
+modell <- lm(Kalorien_je_100ml ~ Stammwuerze + Vol_alkohol, data = bierdaten_clean)
+summary(modell)
+```
+
+Sowohl der Achsenabschnitt als auch der Koeffizient von Vol_alkohol sind signifikant auf dem 0,05-Niveau, während der Einfluss der Stammwuerze statistisch nicht signifikant ist. Das Bestimmtheitsmaß beträgt 0,74, das Modell erklärt somit rund 74% der Varianz der Kalorienmenge pro 100ml Bier. Die Regressionsgleichung für den erwarteten Kaloriengehalt, gegeben Stammwürze und Alkoholgehalt, lautet daher:
+
+E (Kalorien_je_100ml ∣ Stammwuerze, Vol_alkohol) = 17,37 + 0,52⋅Stammwuerze + 4,03⋅Vol_alkohol
+
+Der Kaloriengehalt steigt demnach im Mittel um etwa 4 kcal pro zusätzliches Volumenprozent Alkohol, während der Einfluss der Stammwürze vernachlässigbar ist. Insgesamt liefert das Modell eine gute Vorhersagequalität, wobei insbesondere der Alkoholgehalt eine zentrale Rolle spielt.
+
+### Q-Q-Plot
+
+```{r}
+qqnorm(residuals(modell))
+qqline(residuals(modell))
+```
+
+Der Q-Q-Plot zeigt eine weitgehende Übereinstimmung mit der Normalverteilung. Leichte Abweichungen an den Rändern sind erkennbar, aber tolerierbar.
+
+### Residuen vs. Fitted Values
+
+```{r}
+plot(residuals(modell) ~ fitted(modell),
+     main = "Residuen vs. Vorhersage",
+     ylab = "Residuen", xlab = "Fitted values")
+abline(h = 0)
+```
+Die Residuen sind überwiegend zufällig um die Nulllinie verteilt. Es ist keine systematische Struktur erkennbar, sodass die Annahme der Homoskedastizität (konstanten Varianz) als erfüllt gelten kann.
+
+### Residuen vs. Prädiktoren
+
+```{r}
+par(mfrow = c(1, 2))
+plot(residuals(modell) ~ bierdaten_clean$Stammwuerze, ylab = "Residuen", xlab = "Stammwürze")
+abline(h = 0)
+plot(residuals(modell) ~ bierdaten_clean$Vol_alkohol, ylab = "Residuen", xlab = "Alkoholgehalt")
+abline(h = 0)
+par(mfrow = c(1, 1))
+```
+Auch gegenüber den Prädiktoren zeigen sich keine systematischen Muster – die Modellannahmen sind erfüllt.
+
+### Prognose – Gösser Märzen
+
+Für „Gösser Märzen“ (Stammwürze = 11,9, Alkohol = 5,2):
+
+```{r}
+gosser <- data.frame(Stammwuerze = 11.9, Vol_alkohol = 5.2)
+predict(modell, newdata = gosser, interval = "confidence")
+```
+Der beobachtete Wert liegt bei 43 kcal/100 ml. Das Modell sagt ca. 44,5 kcal voraus. Gösser Märzen liegt im erwarteten Bereich und zeigt kein auffälliges Kalorienverhalten.
+
+### Modellwahl und Fazit
+
+```{r}
+modell_step <- step(modell)
+summary(modell_step)
+```
+Das reduzierte Modell enthält nur noch Vol_alkohol als Prädiktor. Stammwürze wurde entfernt, da sie keine zusätzliche Erklärungskraft liefert. Die Modellgüte bleibt nahezu unverändert (R² = 0,738).
+
+## Fazit
+
+Die Analyse zeigt, dass der Alkoholgehalt ein starker und signifikanter Einflussfaktor auf den Kaloriengehalt ist. Die Stammwürze korreliert stark mit dem Alkoholgehalt, liefert jedoch keine zusätzliche Erklärungskraft. Die Modellannahmen sind erfüllt, und das vereinfachte Modell mit nur einem Prädiktor ist genauso leistungsfähig wie das vollständige Modell. Es eignet sich daher besser für Prognosezwecke. 
+
+Die Biersorte "Gösser Märzen" lässt sich mit dem Modell sehr gut vorhersagen und zeigt ein typisches Kalorienprofil.

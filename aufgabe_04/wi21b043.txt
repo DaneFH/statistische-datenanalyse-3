@@ -1,0 +1,35 @@
+"Bier_name";"Stammwuerze";"Vol_alkohol";"Kalorien_je_100ml"
+"1";"Bierspezialitäten Winterbock";16.2;7.1;45
+"2";"Puntigamer Das \"bierige\" Bier";11.5;5.1;40
+"3";"Schladminger Märzen";11.7;5.1;43
+"4";"Zipfer Limetten Radler";9.6;2;38
+"5";"Gösser Dunkles Zwickl";13.2;5.7;50
+"6";"Starobrno Altbrünner Gold";11.5;5;43
+"7";"Kaiser Sport Radler";7.2;NA;28
+"8";"Kaiser Doppelmalz";12.8;4.7;55
+"9";"Zipfer Hell";6.8;0.4;26
+"10";"Bierspezialitäten Oktoberbräu";12.2;5.2;44
+"11";"Schwechater Hopfenperle";11.8;5.1;40
+"12";"Kaltenhauser 1475 Pale Ale";12.6;5.5;45
+"13";"Puntigamer Winterbier";13.8;6;50
+"14";"Zipfer Stefani Bock";16.2;7.1;58
+"15";"Schlossgold Alkoholfrei";6.5;0.4;24
+"16";"Kaiser Kaiser 2,9 %";9.2;2.9;33
+"17";"Weihenstephaner Alkoholfrei";12.7;0.4;16
+"18";"Reininghaus Pils";NA;4.8;40
+"19";"Kaiser Premium";12.2;5.4;44
+"20";"Kaltenhauser Original";12.5;NA;42
+"21";"Gösser Bock";16.2;7.1;58
+"22";"Heineken Premium Lager";11.4;5;40
+"23";"Weihenstephaner Hefetrüb";12.7;NA;42
+"24";"Kaiser Fasstyp";11.6;5;40
+"25";"Gösser Stiftsbräu";11.8;4.5;45
+"26";"Gösser Gold";12.2;5.3;45
+"27";"Gösser Falkensteiner Märzen";11.7;5.2;42
+"28";"Weihenstephaner Dunkel";12.7;5.3;44
+"29";"Desperados Original";15.2;5.9;60
+"30";"Reininghaus Jahrgangspils 2014";11.3;4.8;40
+"31";"Zipfer Doppelgold";NA;5.5;45
+"32";"Schwechater Lager/Märzenbier";12.8;5.5;NA
+"33";"Gösser Märzen";11.9;5.2;43
+"34";"Wieselburger Gold";11.6;5;40
