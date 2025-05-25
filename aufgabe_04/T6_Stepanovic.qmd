@@ -12,7 +12,7 @@ Der vorliegende Datensatz enthält Informationen zu 34 verschiedenen Biersorten,
 Für jede Biersorte wurden die folgenden Merkmale erhoben:
 
 | Variablen | Beschreibung |
-|------------------------------------|------------------------------------|
+|----|----|
 | **Bier_name** | Bezeichnung der Biersorte (nur zur Identifikation, nicht Bestandteil der Analyse) |
 | **Stammwuerze** | Gehalt an Extraktstoffen vor der Gärung, gemessen in Grad Plato (°P) |
 | **Vol_alkohol** | Alkoholgehalt in Volumenprozent (%) |
@@ -138,6 +138,7 @@ plot(residuals(modell) ~ fitted(modell),
      ylab = "Residuen", xlab = "Fitted values")
 abline(h = 0)
 ```
+
 Die Residuen sind überwiegend zufällig um die Nulllinie verteilt. Es ist keine systematische Struktur erkennbar, sodass die Annahme der Homoskedastizität (konstanten Varianz) als erfüllt gelten kann.
 
 ### Residuen vs. Prädiktoren
@@ -150,17 +151,8 @@ plot(residuals(modell) ~ bierdaten_clean$Vol_alkohol, ylab = "Residuen", xlab = 
 abline(h = 0)
 par(mfrow = c(1, 1))
 ```
+
 Auch gegenüber den Prädiktoren zeigen sich keine systematischen Muster – die Modellannahmen sind erfüllt.
-
-### Prognose – Gösser Märzen
-
-Für „Gösser Märzen“ (Stammwürze = 11,9, Alkohol = 5,2):
-
-```{r}
-gosser <- data.frame(Stammwuerze = 11.9, Vol_alkohol = 5.2)
-predict(modell, newdata = gosser, interval = "confidence")
-```
-Der beobachtete Wert liegt bei 43 kcal/100 ml. Das Modell sagt ca. 44,5 kcal voraus. Gösser Märzen liegt im erwarteten Bereich und zeigt kein auffälliges Kalorienverhalten.
 
 ### Modellwahl und Fazit
 
@@ -168,10 +160,22 @@ Der beobachtete Wert liegt bei 43 kcal/100 ml. Das Modell sagt ca. 44,5 kcal vor
 modell_step <- step(modell)
 summary(modell_step)
 ```
+
 Das reduzierte Modell enthält nur noch Vol_alkohol als Prädiktor. Stammwürze wurde entfernt, da sie keine zusätzliche Erklärungskraft liefert. Die Modellgüte bleibt nahezu unverändert (R² = 0,738).
 
 ## Fazit
 
-Die Analyse zeigt, dass der Alkoholgehalt ein starker und signifikanter Einflussfaktor auf den Kaloriengehalt ist. Die Stammwürze korreliert stark mit dem Alkoholgehalt, liefert jedoch keine zusätzliche Erklärungskraft. Die Modellannahmen sind erfüllt, und das vereinfachte Modell mit nur einem Prädiktor ist genauso leistungsfähig wie das vollständige Modell. Es eignet sich daher besser für Prognosezwecke. 
+Die Analyse zeigt, dass der Alkoholgehalt ein starker und signifikanter Einflussfaktor auf den Kaloriengehalt ist. Die Stammwürze korreliert stark mit dem Alkoholgehalt, liefert jedoch keine zusätzliche Erklärungskraft. Die Modellannahmen sind erfüllt, und das vereinfachte Modell mit nur einem Prädiktor ist genauso leistungsfähig wie das vollständige Modell. Es eignet sich daher besser für Prognosezwecke.
 
 Die Biersorte "Gösser Märzen" lässt sich mit dem Modell sehr gut vorhersagen und zeigt ein typisches Kalorienprofil.
+
+### Prognose – Gösser Märzen
+
+Für „Gösser Märzen“ (Stammwürze = 11,9, Alkohol = 5,2):
+
+```{r}
+gosser <- data.frame(Stammwuerze = 11.9, Vol_alkohol = 5.2)
+predict(modell_step, newdata = gosser, interval = "confidence")
+```
+
+Der beobachtete Wert liegt bei 43 kcal/100 ml. Das finale Modell (nur mit Alkoholgehalt als Prädiktor) prognostiziert für Gösser Märzen etwa 44,84 kcal/100 ml. Gösser Märzen liegt somit im erwarteten Bereich und zeigt kein auffälliges Kalorienverhalten.
